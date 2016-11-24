@@ -1,5 +1,7 @@
-DL1414					KEYWORD1
-writeByte				KEYWORD2
-clear					KEYWORD2
-writeStringFix			KEYWORD2
-writeStringScrolling	KEYWORD2
+DL1414                      KEYWORD1
+writeByte                   KEYWORD2
+clear                       KEYWORD2
+writeStringFix              KEYWORD2
+writeStringScrolling        KEYWORD2
+writeStringScrollingNoDelay KEYWORD2
+updateScrollingString       KEYWORD2

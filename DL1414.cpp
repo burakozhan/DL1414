@@ -19,7 +19,7 @@ DL1414::DL1414(int write, int addr0, int addr1, int data0, int data1, int data2,
   _data5 = data5;
   _data6 = data6;
 
-	pinMode(write, OUTPUT);
+  pinMode(write, OUTPUT);
   pinMode(addr0, OUTPUT);
   pinMode(addr1, OUTPUT);
   pinMode(data0, OUTPUT);
@@ -29,6 +29,8 @@ DL1414::DL1414(int write, int addr0, int addr1, int data0, int data1, int data2,
   pinMode(data4, OUTPUT);
   pinMode(data5, OUTPUT);
   pinMode(data6, OUTPUT);
+
+  _scrollingTextIsSet = false;
 }
 
 /**
@@ -56,10 +58,10 @@ void DL1414::writeByte(char a, byte column){
  * Uses the space character.
  */
 void DL1414::clear(){
-    writeByte(32,0);
-    writeByte(32,1);
-    writeByte(32,2);
-    writeByte(32,3);
+  writeByte(32,0);
+  writeByte(32,1);
+  writeByte(32,2);
+  writeByte(32,3);
 }
 
 /**
@@ -68,9 +70,7 @@ void DL1414::clear(){
  */
 void DL1414::writeStringFix(String text){
   // Add some simple padding so we don't see garbage.
-  if (text.length() < 4){
-    text += "    ";
-  }
+  text += "     ";
   byte b[text.length()];
   text.getBytes(b,text.length());
   writeByte(b[0],3);
@@ -99,3 +99,42 @@ void DL1414::writeStringScrolling(String text, int speed){
   clear();
 }
 
+/**
+ * Writes a scrolling String on the display. Adds spaces as padding.
+ * Scrolling speed set by wait time in parameter speed.
+ * This method uses no delay function, so you can execute 
+ * concurrent code on the arduino. Instead you will need to 
+ * call the update() function periodically from your code
+ */
+void DL1414::writeStringScrollingNoDelay(String text, int speed, long now){
+  clear();
+  text = "    "+text+"    ";
+  _noDelayBufferLength = text.length()+1;
+  _start = now;
+  _speed = speed;
+  _noDelayBuffer = new byte[_noDelayBufferLength];
+  text.getBytes(_noDelayBuffer,_noDelayBufferLength);
+  _scrollingTextIsSet = true;
+}
+
+/**
+ * Updates the display according to elapsed time.
+ * Returns false if everything has been displayed.
+ */
+bool DL1414::updateScrollingString(long now){
+  int i = (now - _start)/_speed;
+  if (!_scrollingTextIsSet) {
+    return false;
+  }
+  if (i+3 >= _noDelayBufferLength-1) {
+    clear();
+    _scrollingTextIsSet = false;
+    delete[] _noDelayBuffer;
+    return false;
+  }
+  writeByte((_noDelayBuffer)[0+i],3);
+  writeByte((_noDelayBuffer)[1+i],2);
+  writeByte((_noDelayBuffer)[2+i],1);
+  writeByte((_noDelayBuffer)[3+i],0);
+  return true;
+}

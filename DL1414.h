@@ -16,6 +16,8 @@ class DL1414
 		void clear();
 		void writeStringFix(String text);
 		void writeStringScrolling(String text, int speed);
+		void writeStringScrollingNoDelay(String text, int speed, long now);
+		bool updateScrollingString(long now);
 	private:
 		int _write;
 		int _addr0;
@@ -27,6 +29,11 @@ class DL1414
 		int _data4;
 		int _data5;
 		int _data6;
+		long _start;
+		long _speed;
+		byte *_noDelayBuffer;
+		int _noDelayBufferLength;
+		bool _scrollingTextIsSet;
 };
 
 #endif
